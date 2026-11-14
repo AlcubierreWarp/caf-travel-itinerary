@@ -15,20 +15,21 @@ By default a claim lasts only as long as the browser tab. In the menu you can ch
 ## Use
 
 - **Website:** open the published page. On a phone, use **Install app** in the menu (or Add to Home Screen on iPhone) to use it like an app, including offline.
-- **Single file:** choose **Download offline copy** in the menu, or download `CAF_Digital_Travel_Itinerary.html` from this repository, and open it in any browser. It works with no internet connection and cannot make network requests at all.
+- **Single file:** choose **Download offline copy** in the menu, or download `CAF_Digital_Travel_Itinerary.html` from this repository's [Releases page](https://github.com/AlcubierreWarp/caf-travel-itinerary/releases), and open it in any browser. It works with no internet connection and cannot make network requests at all.
 
 The page opens with a fictional example claim; choose **Start a blank claim** to begin your own.
 
 ## Checksums
 
-Only use an offline copy that you downloaded yourself from the published site or this repository. If someone sends you one, check it first: its SHA-256 checksum must match the one below for its version, or the one shown in the app's menu under **Download offline copy**. A file that does not match may have been changed and should not be opened.
+Only use an offline copy that you downloaded yourself from the published site or this repository's Releases page. If someone sends you one, check it first: its SHA-256 checksum must match the one below for its version, or the one shown in the app's menu under **Download offline copy**. A file that does not match may have been changed and should not be opened.
 
 <!--CHECKSUMS-->
-| Channel | Version | File | SHA-256 |
-| --- | --- | --- | --- |
-| Production | 1.9 | `CAF_Digital_Travel_Itinerary.html` | `3dbc034ea8af90fbc138028b3f204cc50b1841cbe35e94f44526185d8962c5d5` |
-| Beta | 1.10 beta 10 | `beta/CAF_Digital_Travel_Itinerary.html` | `c12e4ae9e06ee51e90800a095674c35f8c8f099c70265f2fc35cfe236bf16388` |
+| Version | File | SHA-256 |
+| --- | --- | --- |
+| 1.9 | `CAF_Digital_Travel_Itinerary.html` | `3dbc034ea8af90fbc138028b3f204cc50b1841cbe35e94f44526185d8962c5d5` |
 <!--/CHECKSUMS-->
+
+This table shows the current production version. Checksums for both the production and beta files as published right now are at [checksums.txt](https://alcubierrewarp.github.io/caf-travel-itinerary/checksums.txt). Each release's file and checksum are also kept on the [Releases page](https://github.com/AlcubierreWarp/caf-travel-itinerary/releases).
 
 To get a file's checksum:
 
@@ -52,8 +53,8 @@ The version number is shown at the bottom of the page and in help emails. See `C
 
 ## Source and rebuilding
 
-This branch (`main`) is the published site. The source, build and release scripts, tests and documentation are on the `source` branch. To rebuild or keep developing the app from nothing but this repository, follow `REBUILD.md` on that branch. Each production release also has a restore branch, `release-vX.Y`.
+This repository holds the source, the build and release scripts, the tests and the documentation. A GitHub Action builds the site: the beta from `main` on every change, and production from each release. To rebuild or keep developing the app from nothing but this repository, follow `REBUILD.md`. Every production release is kept on the Releases page with the exact files that were published.
 
 ## Third-party code
 
-pdf-lib (MIT License) and pdf.js (Apache License 2.0) are bundled inside `index.html` and `CAF_Digital_Travel_Itinerary.html`. See `THIRD_PARTY_NOTICES.md`.
+pdf-lib (MIT License) and pdf.js (Apache License 2.0) are bundled inside the published page and `CAF_Digital_Travel_Itinerary.html`. See `THIRD_PARTY_NOTICES.md`.

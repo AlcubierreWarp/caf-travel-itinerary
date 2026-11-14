@@ -1,0 +1,41 @@
+/* BETA ONLY. This stylesheet is added to the /beta/ build and never to production.
+   Only things the owner asks for as "beta-specific" go here: tools or visuals that make testing
+   and telling the beta apart easier. Every other change goes in the main app (app/app.html), which
+   goes to both beta and production. If it is unclear, ask the owner first. The page also carries <html data-channel="beta">, and APP_CHANNEL === 'beta' in script,
+   for anything that needs to differ in behaviour. To promote a beta-only change to production,
+   move it into app/app.html.
+   Build-time beta differences (in build.py): greyscale icons, grey theme and launch colour,
+   "CAF Travel Beta" app name, beta build number in the version label.
+   Beta-only script and markup in app/app.html sit between BETA-ONLY markers (see SOURCE.md); build.py
+   removes them from production, and the release check refuses a production build that still has them.
+   Today: Load test data and Reset the beta. Never write a comment opener or closer inside this comment. */
+
+/* Beta colour theme: violet in place of production's green, so the two are never confused.
+   Same tokens as the :root blocks in app/app.html; status colours (ok, warn, bad) are unchanged.
+   Light first, then dark, so the dark rules win when the device is in dark mode. */
+:root[data-channel="beta"]{
+  --bg:#ecebf1; --surface:#f9f8fc; --card:#ffffff; --field:#ffffff;
+  --ink:#1c1a26; --muted:#5d5a6b; --line:#d3d0dd; --line-strong:#9e9aad;
+  --accent:#5a3e9e; --accent-ink:#ffffff; --accent-soft:#e4ddf3;
+  --bar:#1e1a2b; --bar-ink:#f3f1f8; --off:#dfdce6;
+}
+@media (prefers-color-scheme: dark){ :root[data-channel="beta"]:not([data-theme="light"]){
+  --bg:#13121a; --surface:#1a1822; --card:#201e2a; --field:#15141c;
+  --ink:#e7e5ee; --muted:#a29fb0; --line:#302d3c; --line-strong:#535064;
+  --accent:#b7a2ec; --accent-ink:#15111f; --accent-soft:#2a2340;
+  --bar:#0c0b11; --bar-ink:#e7e5ee; --off:#26232f;
+}}
+:root[data-channel="beta"][data-theme="dark"]{
+  --bg:#13121a; --surface:#1a1822; --card:#201e2a; --field:#15141c;
+  --ink:#e7e5ee; --muted:#a29fb0; --line:#302d3c; --line-strong:#535064;
+  --accent:#b7a2ec; --accent-ink:#15111f; --accent-soft:#2a2340;
+  --bar:#0c0b11; --bar-ink:#e7e5ee; --off:#26232f;
+}
+
+/* Beta badge after the page title, the same pill as the import button's Beta tag (.pill-beta) */
+:root[data-channel="beta"] header h1::after{
+  content:"Beta"; display:inline-block; margin-left:8px; padding:1px 6px; border:1px solid currentColor; border-radius:999px;
+  font:700 .6rem/1.4 var(--f-body); font-stretch:100%; letter-spacing:.08em; text-transform:uppercase; vertical-align:middle; opacity:.85;
+  position:relative; top:-.15em;
+}
+:root[data-channel="beta"]:lang(fr) header h1::after{ content:"Bêta" }

@@ -1,0 +1,83 @@
+name: Site
+
+# Publishes the site to GitHub Pages.
+#   /beta/      built from main on every push.
+#   production  the version named in VERSION. The first time a version appears it is
+#               built once and filed as GitHub Release vX.Y; after that the same files
+#               are served every time, so a released version never changes.
+# See release.py and REBUILD.md.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      production_version:
+        description: "Roll production back to this released version, for example 1.9. Leave empty for the current one."
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # file a new release and record its checksum (main only)
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PUBLISH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && '1' || '0' }}
+      PROD_VERSION: ${{ inputs.production_version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # restore branches and the commit date
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Build and check that nothing beta-only reached production
+        run: |
+          pip install --quiet pillow
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          python release.py check
+
+      - name: Put the site together
+        run: python release.py site _site
+
+      - name: Record a new release's checksum
+        if: env.PUBLISH == '1'
+        run: |
+          if ! git diff --quiet README.md CHANGELOG.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --quiet -m "Record the checksum of version $(cat VERSION)" README.md CHANGELOG.md
+            git push origin HEAD:main
+          fi
+
+      - uses: actions/upload-pages-artifact@v5
+        if: env.PUBLISH == '1'
+        with:
+          path: _site
+          include-hidden-files: true
+
+  deploy:
+    name: Publish
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

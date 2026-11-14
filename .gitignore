@@ -1,0 +1,19 @@
+# Build output and test leftovers
+out/
+_site/
+live/
+fixtures/
+shots/
+__pycache__/
+
+# Claude Code: personal, per-machine files
+.claude/settings.local.json
+.claude/worktrees/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS and editor noise
+.DS_Store
