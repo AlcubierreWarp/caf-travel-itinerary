@@ -9,6 +9,8 @@ name: Site
 on:
   push:
     branches: [main]
+    # Notes for builders are not part of the site, so they do not republish it.
+    paths-ignore: ["docs/**", "CLAUDE.md", "SOURCE.md", "REBUILD.md", ".claude/**", ".gitignore"]
   pull_request:
   workflow_dispatch:
     inputs:

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Travel Claim Packager Code Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: an engineering drawing of the app. Summary and big-picture flow first, then a layered
+   section map you can tap (what it calls lights blue, what calls it lights amber), then what to change. */
+:root {
+  --bg: #f4f6f8; --panel: #ffffff; --ink: #14202c; --muted: #5a6876; --line: #d5dce3;
+  --accent: #052748; --accent-ink: #ffffff;
+  --uses: #1f6fd1; --usedby: #c27a00; --bad: #b3261e;
+  --l-entry: #b8432f; --l-feature: #12807a; --l-core: #2a55a8; --l-output: #7346b3; --l-storage: #8a6a12; --l-base: #66727e;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141b; --panel: #161e27; --ink: #e3e9ef; --muted: #96a3b0; --line: #2b3742;
+    --accent: #8db4e8; --accent-ink: #0e141b;
+    --uses: #6aa8ff; --usedby: #f0b24a; --bad: #ff7b72;
+    --l-entry: #f0866f; --l-feature: #4cc3bb; --l-core: #7ea2ec; --l-output: #b48ef0; --l-storage: #d4b257; --l-base: #9aa6b2;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141b; --panel: #161e27; --ink: #e3e9ef; --muted: #96a3b0; --line: #2b3742;
+  --accent: #8db4e8; --accent-ink: #0e141b;
+  --uses: #6aa8ff; --usedby: #f0b24a; --bad: #ff7b72;
+  --l-entry: #f0866f; --l-feature: #4cc3bb; --l-core: #7ea2ec; --l-output: #b48ef0; --l-storage: #d4b257; --l-base: #9aa6b2;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--f-body); }
+a { color: var(--uses); }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--uses); outline-offset: 2px; }
+code, .mono { font-family: var(--f-mono); font-size: .86em; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.7rem, 4.5vw, 2.4rem); letter-spacing: -.01em; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; max-width: 68ch; }
+.muted { color: var(--muted); }
+
+header { display: grid; gap: 10px; }
+.eyebrow { font: 500 .78rem/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 6px; }
+.stat { display: grid; }
+.stat b { font: 600 1.45rem/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+.stat span { font-size: .82rem; color: var(--muted); }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; }
+.cols { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .cols.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+
+figure { margin: 0; display: grid; gap: 10px; }
+figure svg { width: 100%; max-width: 520px; height: auto; justify-self: center; color: var(--ink); }
+figcaption { font-size: .86rem; color: var(--muted); max-width: 68ch; }
+
+/* Section map */
+.map { display: grid; gap: 10px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .82rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.band { border-left: 4px solid var(--lc); padding: 4px 0 4px 12px; display: grid; gap: 6px; }
+.band h3 { font-size: .95rem; color: var(--lc); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.band h3 small { font: 400 .78rem var(--f-body); color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 .84rem/1.2 var(--f-body); color: var(--ink); background: color-mix(in srgb, var(--lc) 9%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--lc) 35%, var(--line)); border-radius: 7px; padding: 6px 9px 7px; cursor: pointer;
+  display: grid; gap: 4px; text-align: left; min-width: 0; transition: background .12s, border-color .12s, opacity .12s; }
+.chip .meta { font: 400 .72rem var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip .bar { height: 3px; border-radius: 2px; background: var(--lc); opacity: .55; }
+.chip:hover { border-color: var(--lc); }
+.map.focus .chip { opacity: .42; }
+.map.focus .chip.sel, .map.focus .chip.uses, .map.focus .chip.usedby { opacity: 1; }
+.chip.sel { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip.sel .meta { color: inherit; opacity: .8; }
+.chip.uses { border: 2px solid var(--uses); background: color-mix(in srgb, var(--uses) 14%, var(--panel)); padding: 5px 8px 6px; }
+.chip.usedby { border: 2px solid var(--usedby); background: color-mix(in srgb, var(--usedby) 16%, var(--panel)); padding: 5px 8px 6px; }
+.chip.uses.usedby { border-color: var(--uses); box-shadow: inset 0 -3px 0 var(--usedby); }
+.chip .tag { font: 600 .66rem/1 var(--f-mono); letter-spacing: .04em; text-transform: uppercase; }
+.chip.uses .tag::before { content: "it calls this"; color: var(--uses); }
+.chip.usedby .tag::before { content: "calls it"; color: var(--usedby); }
+.chip.uses.usedby .tag::before { content: "both ways"; color: var(--uses); }
+
+/* Detail panel */
+.panel { position: sticky; top: 12px; }
+@media (max-width: 899px) { .panel { position: static; } }
+.panel .head { display: grid; gap: 6px; }
+.pill { justify-self: start; font: 600 .7rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; padding: 4px 7px; border-radius: 99px;
+  color: var(--lc); background: color-mix(in srgb, var(--lc) 14%, var(--panel)); }
+.kv { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .84rem; color: var(--muted); }
+.kv b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.links h4 { margin: 0 0 6px; font: 600 .8rem var(--f-body); text-transform: uppercase; letter-spacing: .05em; }
+.links h4.u { color: var(--uses); } .links h4.b { color: var(--usedby); }
+.links { display: grid; gap: 14px; }
+ul.plain { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+ul.plain li { font-size: .88rem; }
+.ex { display: block; font: 400 .74rem/1.4 var(--f-mono); color: var(--muted); overflow-wrap: anywhere; }
+.lk { background: none; border: 0; padding: 0; font: inherit; color: var(--uses); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: left; }
+.fntable { overflow-x: auto; max-height: 340px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: .84rem; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { position: sticky; top: 0; background: var(--panel); font: 600 .72rem var(--f-body); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+td.n { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--f-mono); font-size: .8rem; }
+tr.dead td:first-child::after { content: "never called"; margin-left: 8px; font: 600 .66rem var(--f-mono); color: var(--bad); text-transform: uppercase; }
+
+.finder { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.finder label { font-size: .86rem; color: var(--muted); }
+.finder input { font: 400 .95rem var(--f-mono); padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--ink); min-width: 0; flex: 1 1 180px; }
+.chiprow { display: flex; flex-wrap: wrap; gap: 5px; }
+.fnchip { font: 500 .78rem/1 var(--f-mono); padding: 6px 7px; border-radius: 6px; cursor: pointer; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.fnchip:hover { border-color: var(--uses); }
+
+/* Findings */
+ol.findings { margin: 0; padding: 0; list-style: none; counter-reset: f; display: grid; gap: 14px; }
+ol.findings li { counter-increment: f; display: grid; grid-template-columns: 2.1rem 1fr; gap: 0 10px; }
+ol.findings li::before { content: counter(f); font: 600 1.2rem/1.3 var(--f-display); color: var(--accent); grid-row: span 3; }
+ol.findings h3 { font-size: 1.02rem; }
+ol.findings p { font-size: .92rem; }
+ol.findings .dir { margin-top: 4px; font-size: .88rem; padding-left: 10px; border-left: 3px solid var(--accent); }
+.note p { font-size: .86rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Code map · Travel-Claim-Packager · source branch · 7 Nov 2026</div>
+  <h1>How the CAF Digital Travel Itinerary is built</h1>
+  <p class="muted">A static analysis of <code>app/app.html</code> and <code>app/itin.js</code> (version 1.10 beta 9). It lists every top-level function and value and links them wherever one calls or reads another, so you can see the structure Claude has been building and where it has drifted.</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<section class="card">
+  <h2>The big picture</h2>
+  <figure>
+    <svg viewBox="0 0 400 572" role="img" aria-label="Flow of the app: taps and the Build button go through events; events write the claim S; derived recalculates and rendering redraws the screen; build() runs checks then one of three PDF layouts through pdf-lib; itinerary files go through the import section and the pure itin.js parser into S; S is saved to the tab or the device; a foundation of helpers is used by every section." font-family="IBM Plex Sans, system-ui, sans-serif">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+      </defs>
+      <g font-size="12">
+        <!-- inputs -->
+        <g fill="none" stroke="currentColor" stroke-dasharray="3 3" opacity=".7">
+          <rect x="10" y="16" width="110" height="40" rx="20"/><rect x="130" y="16" width="110" height="40" rx="20"/><rect x="280" y="16" width="110" height="40" rx="20"/>
+        </g>
+        <g text-anchor="middle" fill="currentColor"><text x="65" y="40">Typing, taps</text><text x="185" y="40">Build button</text><text x="335" y="40">Itinerary file</text></g>
+
+        <!-- boxes: entry -->
+        <rect x="10" y="96" width="230" height="44" rx="6" fill="var(--l-entry)" fill-opacity=".14" stroke="var(--l-entry)"/>
+        <text x="20" y="114" font-weight="600" fill="currentColor">events</text><text x="20" y="130" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">one listener set, routes everything</text>
+        <!-- feature -->
+        <rect x="280" y="96" width="110" height="44" rx="6" fill="var(--l-feature)" fill-opacity=".14" stroke="var(--l-feature)"/>
+        <text x="290" y="114" font-weight="600" fill="currentColor">itinerary import</text><text x="290" y="130" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">PDF, .eml, .msg</text>
+        <rect x="280" y="176" width="110" height="44" rx="6" fill="var(--l-feature)" fill-opacity=".14" stroke="var(--l-feature)" stroke-width="2"/>
+        <text x="290" y="194" font-weight="600" fill="currentColor">itin.js</text><text x="290" y="210" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">pure, tested</text>
+        <!-- core -->
+        <rect x="10" y="176" width="230" height="44" rx="6" fill="var(--l-core)" fill-opacity=".18" stroke="var(--l-core)" stroke-width="2"/>
+        <text x="20" y="194" font-weight="600" fill="currentColor">state: the claim S, receipts R</text><text x="20" y="210" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">read or written by 95 functions</text>
+        <rect x="10" y="256" width="230" height="44" rx="6" fill="var(--l-core)" fill-opacity=".14" stroke="var(--l-core)"/>
+        <text x="20" y="274" font-weight="600" fill="currentColor">derived</text><text x="20" y="290" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">refresh(), checks(), totals</text>
+        <rect x="130" y="336" width="110" height="44" rx="6" fill="var(--l-core)" fill-opacity=".14" stroke="var(--l-core)"/>
+        <text x="140" y="354" font-weight="600" fill="currentColor">rendering</text><text x="140" y="370" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">render*()</text>
+        <!-- entry: build -->
+        <rect x="10" y="336" width="110" height="44" rx="6" fill="var(--l-output)" fill-opacity=".14" stroke="var(--l-output)"/>
+        <text x="20" y="354" font-weight="600" fill="currentColor">build()</text><text x="20" y="370" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">in TI section</text>
+        <!-- storage -->
+        <rect x="280" y="256" width="110" height="44" rx="6" fill="var(--l-storage)" fill-opacity=".14" stroke="var(--l-storage)"/>
+        <text x="290" y="274" font-weight="600" fill="currentColor">saving</text><text x="290" y="290" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">tab, IndexedDB</text>
+        <!-- screen -->
+        <rect x="280" y="336" width="110" height="44" rx="22" fill="none" stroke="currentColor" stroke-dasharray="3 3" opacity=".7"/>
+        <text x="335" y="362" text-anchor="middle" fill="currentColor">Screen</text>
+        <!-- output layouts -->
+        <g fill="var(--l-output)" fill-opacity=".14" stroke="var(--l-output)">
+          <rect x="10" y="416" width="70" height="40" rx="6"/><rect x="90" y="416" width="70" height="40" rx="6"/><rect x="170" y="416" width="70" height="40" rx="6"/>
+        </g>
+        <g text-anchor="middle" fill="currentColor" font-size="11"><text x="45" y="440">Standard</text><text x="125" y="440">Beautify</text><text x="205" y="440">Travel Itin.</text></g>
+        <rect x="10" y="512" width="230" height="44" rx="6" fill="none" stroke="currentColor" opacity=".7"/>
+        <text x="20" y="530" font-weight="600" fill="currentColor">pdf-lib</text><text x="20" y="546" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">one PDF for the Orderly Room</text>
+        <!-- foundation -->
+        <rect x="280" y="416" width="110" height="140" rx="6" fill="var(--l-base)" fill-opacity=".14" stroke="var(--l-base)"/>
+        <text x="290" y="436" font-weight="600" fill="currentColor">Foundation</text>
+        <g font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace"><text x="290" y="456">T() French text</text><text x="290" y="472">dates, money</text><text x="290" y="488">ranks, provinces</text><text x="290" y="504">$(), esc()</text></g>
+        <text x="290" y="532" font-size="10" fill="currentColor">used by 22 of the</text><text x="290" y="546" font-size="10" fill="currentColor">other 25 sections</text>
+      </g>
+
+      <!-- arrows -->
+      <g stroke="currentColor" fill="none" stroke-width="1.3" marker-end="url(#ah)">
+        <line x1="65" y1="56" x2="65" y2="94"/><line x1="185" y1="56" x2="185" y2="94"/><line x1="335" y1="56" x2="335" y2="94"/>
+        <line x1="125" y1="140" x2="125" y2="174"/>
+        <line x1="335" y1="140" x2="335" y2="174"/>
+        <path d="M280 130 L242 186"/>
+        <line x1="125" y1="220" x2="125" y2="254"/>
+        <path d="M240 212 L278 266"/>
+        <line x1="185" y1="300" x2="185" y2="334"/>
+        <line x1="240" y1="358" x2="278" y2="358"/>
+        <path d="M10 118 H4 V358 H8"/>
+        <line x1="65" y1="336" x2="65" y2="302"/>
+        <path d="M45 380 V414"/><path d="M85 380 L120 414"/><path d="M110 380 L195 414"/>
+        <line x1="45" y1="456" x2="45" y2="510"/><line x1="125" y1="456" x2="125" y2="510"/><line x1="205" y1="456" x2="205" y2="510"/>
+      </g>
+      <path d="M190 456 C 190 490, 150 490, 150 458" fill="none" stroke="var(--l-output)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+      <!-- arrow labels -->
+      <g font-size="10" fill="var(--muted)" font-family="IBM Plex Mono, monospace">
+        <text x="130" y="162">writes S</text>
+        <text x="340" y="162">text lines</text>
+        <text x="270" y="158">adds stops</text>
+        <text x="130" y="242">reads S</text>
+        <text x="266" y="242">persist()</text>
+        <text x="190" y="322">redraws</text>
+        <text x="246" y="352">HTML</text>
+        <text x="70" y="322">checks()</text>
+        <text x="152" y="500">reuses 7 helpers</text>
+      </g>
+    </svg>
+    <figcaption>Every change goes the same way: <code>events</code> writes to the claim object <code>S</code>, <code>refresh()</code> recalculates, and the rendering section redraws. The Build button runs <code>build()</code>, which blocks on any failed check, then hands the claim to one of three layouts. The dashed arrow is a coupling to watch: the Travel Itinerary layout borrows code from Beautify.</figcaption>
+  </figure>
+</section>
+
+<section class="cols two">
+  <div class="card">
+    <h2>Sections and how they connect</h2>
+    <p class="muted" style="font-size:.9rem">Tap a section. Sections it calls light up blue, sections that call it light up amber. Bar length shows size in lines.</p>
+    <div class="legend" id="legend"></div>
+    <div class="map focus" id="map"></div>
+  </div>
+  <div class="card panel" id="panel" aria-live="polite"></div>
+</section>
+
+<section class="card">
+  <h2>Look up a function</h2>
+  <div class="finder">
+    <label for="q">Function or value name</label>
+    <input id="q" list="names" placeholder="e.g. refresh, tripDates, build" autocomplete="off" spellcheck="false">
+    <datalist id="names"></datalist>
+  </div>
+  <div id="fnview"></div>
+</section>
+
+<section class="card">
+  <h2>What this tells you, and what to ask for</h2>
+  <ol class="findings">
+    <li><h3>One well-labelled file with no walls between the labels</h3>
+      <p>The app is 4,319 lines in a single closure, split into 26 named sections in a sensible order. Any function can call any other, and 15 of the 26 sections now depend on each other in one loop: state, derived, rendering, the Standard and Beautify layouts, drafts, device storage and 8 others. A change in any of them can ripple into the rest.</p>
+      <p class="dir">Ask for: a stated dependency direction (foundation, then state, then derived, then screen and PDF), checked by a test that fails when a lower section calls a higher one.</p></li>
+    <li><h3>The claim object <code>S</code> is the real backbone</h3>
+      <p>95 functions and handlers in 16 sections read or write <code>S</code> directly, next to 24 other mutable top-level variables (<code>R</code>, <code>IMP</code>, <code>CROP</code>, <code>building</code> and so on). This is the main reason the sections are tangled.</p>
+      <p class="dir">Ask for: only the state section changes <code>S</code>; every other section calls a named function such as <code>setStatus()</code> to change it.</p></li>
+    <li><h3>Shared helpers live where they were first needed</h3>
+      <p><code>tripDates()</code> and <code>locFor()</code> sit in rendering, yet 20 and 8 functions use them, most of them in the PDF layouts. <code>dDow()</code> and <code>primaryCur()</code> sit in Beautify, yet the Travel Itinerary layout uses them. This is most of what ties the layouts to the screen code.</p>
+      <p class="dir">Ask for: a "claim facts" section (trip dates, locations, meal counts, currencies) that the screen and every layout read from.</p></li>
+    <li><h3>The PDF layouts are 35% of the app and lean on each other</h3>
+      <p>Standard, Beautify and Travel Itinerary together are 1,530 lines. <code>build()</code>, the Build button for every layout, is filed in the Travel Itinerary section and calls <code>prettify()</code> and <code>prettyDraw()</code> from Beautify, and Beautify holds the layout toggles for all three. As it stands, retiring Beautify would break the Travel Itinerary layout.</p>
+      <p class="dir">Ask for: a small "package builder" section that owns <code>build()</code> and the layout toggles, with each layout only drawing pages.</p></li>
+    <li><h3>Two sections are grab-bags</h3>
+      <p><code>drafts</code> holds draft saving plus email and sharing, version labels, notices, pull to refresh and the language switch. <code>language</code> holds <code>T()</code> plus dates, money, ranks, provinces and jurat tables. The labels no longer describe what is inside.</p>
+      <p class="dir">Ask for: split them into sharing, app shell, and formatting, so the map stays honest.</p></li>
+    <li><h3><code>itin.js</code> is the pattern to copy</h3>
+      <p>Pure functions, its own file, its own tests, one public object and one caller. It is the only part of the app with a real wall around it.</p>
+      <p class="dir">Ask for: the same treatment for the calculations in <code>derived</code> (totals and checks) next, since a wrong total is the costliest bug this tool can ship.</p></li>
+    <li><h3>Three functions are never called</h3>
+      <p><code>meals()</code> and <code>declExpense()</code> in the PDF section and <code>dRange()</code> in Beautify have no callers anywhere in the source.</p>
+      <p class="dir">Ask for: delete them after a quick check.</p></li>
+  </ol>
+</section>
+
+<section class="card note">
+  <h3>How this map was made</h3>
+  <p>A script parsed the source branch with a JavaScript parser, took every top-level function and value inside the app's closure plus <code>itin.js</code>, and linked two of them whenever one names the other. Sections come from the <code>/* ---------- name ---------- */</code> markers. Top-level code that is not a function (mostly event listeners) is shown as a "wiring" entry for its section. Limits: a local variable that shares a top-level name can add a few false links, and the inlined libraries (pdf-lib, pdf.js) and French strings (<code>fr.js</code>) are left out. Line links open the source branch on GitHub.</p>
+</section>
+
+</div>
+<script>
+const D = {"layers":[["entry","Entry points","Where a tap, a typed value or page load comes in"],["feature","Features","Self-contained jobs the member can start"],["core","Claim model and screen","The claim, its calculations and how it is drawn"],["output","PDF output","The three package layouts"],["storage","Saving and files","Where the claim and receipts are kept"],["base","Foundation","Small helpers everything else uses"]],"secs":[{"n":"setup and helpers","L":"base","d":"Page snapshot and the $, $$, uid and esc helpers.","loc":9,"f":4,"v":1,"line":1009,"file":"app/app.html"},{"n":"language (EN/FR)","L":"base","d":"T() for French text, plus dates, money, ranks, provinces and jurat tables.","loc":115,"f":21,"v":28,"line":1018,"file":"app/app.html"},{"n":"telephone","L":"base","d":"Phone number checks and formatting.","loc":15,"f":4,"v":0,"line":1133,"file":"app/app.html"},{"n":"state","L":"core","d":"The claim object S, receipts R, and rules about stays, leave and meals.","loc":106,"f":28,"v":5,"line":1148,"file":"app/app.html"},{"n":"section definitions","L":"core","d":"The worksheet sections A to G and their columns.","loc":31,"f":6,"v":4,"line":1254,"file":"app/app.html"},{"n":"rendering","L":"core","d":"Builds the HTML for each section, the meals grid and the statutory declaration editor.","loc":313,"f":32,"v":4,"line":1285,"file":"app/app.html"},{"n":"derived","L":"core","d":"Totals, the checks list, required fields, and refresh(), which redraws after every change.","loc":246,"f":20,"v":6,"line":1598,"file":"app/app.html"},{"n":"persistence (tab)","L":"storage","d":"Keeps the claim for the life of the browser tab.","loc":23,"f":3,"v":1,"line":1844,"file":"app/app.html"},{"n":"toast & files","L":"storage","d":"Turns dropped files into receipts, and shows toasts.","loc":79,"f":7,"v":1,"line":1867,"file":"app/app.html"},{"n":"events","L":"entry","d":"The controller. One set of listeners for input, change, click and drop, routed to the right section.","loc":280,"f":11,"v":3,"line":1946,"file":"app/app.html"},{"n":"day status (leave, field days)","L":"feature","d":"Leave and field days, kept in step with lodging and meals.","loc":86,"f":7,"v":0,"line":2226,"file":"app/app.html"},{"n":"dialogs","L":"feature","d":"Locks the page behind an open dialog.","loc":22,"f":2,"v":1,"line":2312,"file":"app/app.html"},{"n":"itinerary import (Amex GBT)","L":"feature","d":"Reads Amex GBT itinerary PDFs, .eml and .msg files and proposes stops and hotels.","loc":201,"f":16,"v":3,"line":2334,"file":"app/app.html"},{"n":"offline copy","L":"feature","d":"Builds the single-file offline copy and checks its SHA-256.","loc":44,"f":5,"v":4,"line":2535,"file":"app/app.html"},{"n":"drafts","L":"feature","d":"Saving, sharing and emailing drafts, plus version labels, notices, pull to refresh and the language switch.","loc":269,"f":29,"v":9,"line":2579,"file":"app/app.html"},{"n":"PDF","L":"output","d":"Standard worksheet layout, the PDF painter and the statutory declaration.","loc":431,"f":30,"v":6,"line":2848,"file":"app/app.html"},{"n":"Beautify layout","L":"output","d":"The designed layout, plus the layout and import toggles for all layouts.","loc":511,"f":24,"v":5,"line":3279,"file":"app/app.html"},{"n":"Travel Itinerary layout","L":"output","d":"The two-reader Travel Itinerary layout, and build(), the Build button for every layout.","loc":588,"f":15,"v":4,"line":3790,"file":"app/app.html"},{"n":"example","L":"feature","d":"The fictional example claim shown on first visit.","loc":47,"f":2,"v":0,"line":4378,"file":"app/app.html"},{"n":"beta tools (beta only)","L":"feature","d":"Test data and reset. Stripped from production by build.py.","loc":85,"f":3,"v":2,"line":4425,"file":"app/app.html"},{"n":"snap a receipt","L":"feature","d":"Camera capture flow for a receipt photo.","loc":36,"f":6,"v":2,"line":4510,"file":"app/app.html"},{"n":"receipt crop","L":"feature","d":"Drag four corners to straighten a receipt photo on the device.","loc":199,"f":17,"v":2,"line":4546,"file":"app/app.html"},{"n":"install as app (PWA)","L":"feature","d":"Install prompts and switching between beta and production.","loc":39,"f":9,"v":2,"line":4745,"file":"app/app.html"},{"n":"device storage (IndexedDB)","L":"storage","d":"Keep my work on this device: IndexedDB, PIN encryption, 30-day expiry, settings.","loc":173,"f":35,"v":10,"line":4784,"file":"app/app.html"},{"n":"boot","L":"entry","d":"Starts the page: restores a saved claim or loads the example.","loc":24,"f":1,"v":0,"line":4957,"file":"app/app.html"},{"n":"itinerary reader (itin.js)","L":"feature","d":"Pure parser for itinerary text. Its own file, its own tests, one public object (ITIN).","loc":347,"f":0,"v":0,"line":1,"file":"app/itin.js"}],"fns":[["PRISTINE",0,1013,"v",1,[]],["$",0,1014,"f",1,[]],["$$",0,1015,"f",1,[]],["uid",0,1016,"f",1,[]],["esc",0,1017,"f",1,[]],["CH",1,1025,"v",1,[]],["LANG_KEY",1,1026,"v",1,[]],["LANG",1,1027,"m",1,["CH","LANG_KEY"]],["fr",1,1028,"f",1,["LANG"]],["MISSING",1,1029,"v",1,[]],["T",1,1030,"f",5,["LANG","MISSING"]],["nPl",1,1035,"f",1,["T","fr"]],["MON",1,1036,"v",1,[]],["MONTHS",1,1037,"v",1,[]],["DOW",1,1038,"v",1,[]],["MON_FR",1,1039,"v",1,[]],["MONTHS_FR",1,1040,"v",1,[]],["DOW_FR",1,1041,"v",1,[]],["isoOk",1,1042,"f",1,[]],["fmtDate",1,1043,"f",1,["MON","MON_FR","fr","isoOk"]],["fmtLong",1,1044,"f",1,["MONTHS","MONTHS_FR","fr","isoOk"]],["dow",1,1045,"f",1,["DOW","DOW_FR","fr","isoOk"]],["MON_FR_BOX",1,1047,"v",1,[]],["dShow",1,1048,"f",1,["MON_FR_BOX","T","dow","fmtDate","fr","isoOk"]],["dateWrap",1,1049,"f",1,["dShow","isoOk"]],["syncDate",1,1050,"f",1,["dShow","isoOk"]],["num",1,1051,"f",1,[]],["fmtN",1,1052,"f",1,["fr"]],["money",1,1053,"f",1,["fmtN","num"]],["curOf",1,1054,"f",1,[]],["STORE",1,1057,"v",1,[]],["inViewer",1,1058,"v",1,[]],["MODES",1,1059,"v",1,[]],["NOTRAVEL",1,1060,"v",1,[]],["modeLabel",1,1061,"f",1,["NOTRAVEL","T"]],["MEALS",1,1062,"v",1,[]],["RANKS",1,1064,"v",7,[]],["RANKFULL",1,1071,"v",1,["RANKS"]],["RANK_FR",1,1073,"v",10,[]],["rankAbbr",1,1083,"f",1,["RANK_FR","fr"]],["rankFull",1,1084,"f",1,["RANKFULL","RANK_FR","fr"]],["offRankText",1,1086,"f",1,["RANKFULL","RANK_FR","fr"]],["OLDRANK",1,1087,"v",1,[]],["OFFICERS",1,1089,"v",2,[]],["PROVS",1,1091,"v",1,[]],["PROVS_FR",1,1092,"v",1,[]],["PROV_IN_FR",1,1094,"v",1,[]],["PROV_HEAD_FR",1,1095,"v",1,[]],["provName",1,1096,"f",1,["PROVS","PROVS_FR","fr"]],["FT",1,1097,"v",1,[]],["JURATS",1,1099,"v",15,["FT"]],["ENV_FR",1,1114,"v",1,[]],["JURATS_FR",1,1115,"v",15,["ENV_FR"]],["jur",1,1130,"f",1,["JURATS","JURATS_FR","fr"]],["juratWho",1,1131,"f",1,["jur"]],["telOk",2,1134,"f",1,[]],["extOk",2,1135,"f",1,[]],["normTel",2,1136,"f",10,[]],["telStr",2,1146,"f",1,[]],["S",3,1149,"v",1,[]],["R",3,1149,"v",1,[]],["newStop",3,1150,"f",1,["uid"]],["LOST",3,1153,"f",1,[]],["ROWNEW",3,1154,"v",6,["LOST"]],["FILENO_DEFAULT",3,1162,"v",1,[]],["blank",3,1163,"f",8,["FILENO_DEFAULT","blankSD","newStop"]],["blankSD",3,1171,"f",1,[]],["sdName",3,1172,"f",1,["S"]],["isCiv",3,1173,"f",1,["S"]],["sdRank",3,1174,"f",1,["S","isCiv","rankFull"]],["isStd",3,1175,"f",1,[]],["stayKind",3,1176,"f",1,[]],["rationsStay",3,1177,"f",1,["S","isoOk"]],["datesBetween",3,1178,"f",1,["addDays","isoOk"]],["LEAVE",3,1180,"v",1,[]],["leaveDays",3,1181,"f",9,["S","datesBetween"]],["updateLeave",3,1190,"f",1,["LEAVE","leaveDays"]],["leaveNights",3,1191,"f",1,["S","addDays","isoOk"]],["fieldStay",3,1196,"f",1,["S","isoOk"]],["autoStatus",3,1197,"f",1,["LEAVE","fieldStay"]],["dayStatus",3,1198,"f",1,["S","autoStatus"]],["statusLabel",3,1199,"f",1,["T"]],["pruneStatus",3,1200,"f",1,["S","autoStatus"]],["mealVal",3,1201,"f",1,["S","dayStatus","rationsStay"]],["rangeText",3,1202,"f",1,["T","fmtDate"]],["resetMealsFor",3,1203,"f",5,["S","addDays","isoOk"]],["getArr",3,1208,"f",1,["S"]],["getPath",3,1209,"f",1,["S"]],["setPath",3,1210,"f",1,["S"]],["addDays",3,1211,"f",1,[]],["normMode",3,1212,"f",7,["MODES"]],["normalize",3,1219,"f",34,["FILENO_DEFAULT","OLDRANK","ROWNEW","T","addDays","blank","blankSD","getArr","isoOk","newStop","normMode","sdMigrate","uid"]],["COL",4,1255,"v",6,[]],["DEFS",4,1261,"v",9,["COL"]],["LIST_SECS",4,1270,"v",1,[]],["SECNAME",4,1271,"v",1,[]],["refsFor",4,1273,"f",6,["DEFS"]],["rowDate",4,1279,"f",1,[]],["rowLoc",4,1280,"f",1,[]],["needsEvidence",4,1281,"f",1,["isStd"]],["nights",4,1282,"f",1,["isoOk"]],["privAddr",4,1283,"f",1,[]],["cellHTML",5,1286,"f",15,["T","autoRate","dateWrap","esc","num"]],["lostAmtText",5,1301,"f",4,["T","amt","money"]],["rcHTML",5,1305,"f",20,["R","S","T","esc","lostAmtText","refsFor"]],["rowHTML",5,1325,"f",9,["DEFS","T","cellHTML","esc","rcHTML"]],["stayField",5,1334,"f",7,["T","dateWrap","esc","num"]],["leaveHTML",5,1343,"f",4,["T","esc","nPl","rangeText"]],["staysHTML",5,1347,"f",7,["DEFS","S","T","esc","isoOk","leaveHTML","stayHTML"]],["stayHTML",5,1354,"f",24,["T","esc","isStd","rcHTML","stayField","stayKind"]],["renderList",5,1378,"f",7,["$","DEFS","T","esc","getArr","rowHTML","staysHTML"]],["timeGroup",5,1385,"f",9,["T","dateWrap","esc"]],["renderItin",5,1394,"f",35,["$","MODES","S","T","esc","modeLabel","timeGroup"]],["modeText",5,1429,"f",1,["T","modeLabel"]],["tripDates",5,1431,"f",6,["S","addDays","isoOk"]],["locFor",5,1437,"f",8,["S"]],["renderMeals",5,1445,"f",13,["$","MEALS","S","T","dayStatus","dow","esc","fmtDate","fmtLong","fr","locFor","mealVal","pruneStatus","rationsStay","statusLabel","tripDates","updateLeave"]],["dstDay",5,1459,"v",1,[]],["dstOpen",5,1460,"f",10,["$","$$","T","dShow","dayStatus","dstDay","esc","tripDates"]],["dstClose",5,1470,"f",1,["$"]],["dstApply",5,1471,"f",11,["$","datesBetween","dstClose","dstDay","setStatus"]],["mealCounts",5,1482,"f",1,["MEALS","mealVal","tripDates"]],["syncOut",5,1483,"f",9,["$","$$","S","T"]],["renderBinds",5,1492,"f",10,["$","$$","S","T","esc","getPath","syncOut"]],["RAIL",5,1502,"v",1,[]],["renderRail",5,1503,"f",9,["$","$$","OFFICERS","PROVS","RAIL","RANKS","T","blank","esc","fr","offRankText","provName","rankAbbr","rankFull"]],["lostItems",5,1512,"f",5,["DEFS","LIST_SECS","getArr","needsEvidence"]],["inMatter",5,1517,"f",7,["T","fr"]],["today",5,1525,"f",1,[]],["juratDate",5,1526,"f",1,["S","today"]],["juratDay",5,1527,"f",7,["MONTHS","MONTHS_FR","fr","isoOk"]],["juratDateText",5,1534,"f",5,["fr","juratDate","juratDay"]],["juratPlaceText",5,1539,"f",5,["PROVS","PROV_IN_FR","S","fr"]],["sdEditing",5,1544,"v",1,[]],["SD_MAX",5,1545,"v",1,[]],["sdParaHtml",5,1546,"f",17,["SD_MAX","T","esc","sdClean","sdEditing"]],["renderSD",5,1563,"f",31,["$","$$","S","T","esc","fr","inMatter","jur","juratDate","juratDateText","juratPlaceText","juratWho","lostAmtText","lostItems","sdEdited","sdEditing","sdName","sdParaHtml","sdParts","syncDate"]],["renderAll",5,1594,"f",3,["LIST_SECS","refresh","refreshPlaces","renderBinds","renderItin","renderList","renderMeals"]],["ts",6,1599,"f",7,["isoOk"]],["earlier",6,1606,"f",1,[]],["itinIssues",6,1607,"f",11,["S","T","earlier","ts"]],["durText",6,1618,"f",7,["NOTRAVEL","T","ts"]],["autoRate",6,1625,"f",1,["num"]],["sumBy",6,1626,"f",1,["curOf","num"]],["GROUPS",6,1627,"f",6,["S","isStd"]],["grandTotals",6,1633,"f",1,["GROUPS","sumBy"]],["evidenceCount",6,1634,"f",5,["LIST_SECS","R","getArr","needsEvidence"]],["checks",6,1640,"f",80,["DEFS","NOTRAVEL","S","T","addDays","datesBetween","extOk","fmtDate","getArr","isStd","isoOk","itinIssues","leaveNights","lostItems","nPl","nights","num","rangeText","sdName","sdParts","telOk","tripDates"]],["building",6,1721,"v",1,[]],["SHOWALL",6,1723,"v",1,[]],["visited",6,1724,"v",1,[]],["SECCODE",6,1725,"v",1,[]],["hasData",6,1726,"f",10,["S"]],["started",6,1736,"f",1,["S","SHOWALL","hasData"]],["touch",6,1737,"f",1,["S","SECCODE"]],["requiredFields",6,1738,"f",5,["S"]],["markRequired",6,1743,"f",3,["SHOWALL","requiredFields","visited"]],["refresh",6,1746,"f",79,["$","$$","LEAVE","MEALS","RAIL","S","SHOWALL","T","building","checks","datesBetween","durText","esc","evidenceCount","extOk","fileBase","fmtN","getArr","grandTotals","itinIssues","lostAmtText","markRequired","mealCounts","nPl","nights","persist","rangeText","renderSD","saveChip","started","syncDate","syncFnDefault","telOk","updateLeave"]],["refreshPlaces",6,1825,"f",6,["$","LIST_SECS","S","T","esc","getArr","rowLoc"]],["MARKINGS",6,1833,"v",1,[]],["MARKINGS_FR",6,1834,"v",1,[]],["markText",6,1835,"f",1,["MARKINGS","MARKINGS_FR","fr"]],["markCode",6,1836,"f",1,["fr"]],["fileBase",6,1837,"f",6,["S","fr","isoOk","markCode","rankAbbr","today"]],["pT",7,1845,"v",1,[]],["persist",7,1846,"f",9,["S","STORE","checkStale","devSchedule","liveReceipts","pT","profileSchedule"]],["liveReceipts",7,1855,"f",1,["LIST_SECS","R","getArr"]],["restore",7,1856,"f",10,["LIST_SECS","R","S","STORE","getArr","nPl","normalize","toast"]],["toast",8,1868,"f",6,["$","esc"]],["IOS_PWA",8,1876,"v",1,[]],["offerFile",8,1877,"f",21,["IOS_PWA","T","inViewer","shareable","toast"]],["bufToB64",8,1898,"f",1,[]],["dataUrlToBytes",8,1899,"f",1,[]],["toJpeg",8,1900,"f",16,[]],["fileToReceipt",8,1916,"f",7,["bufToB64","toJpeg"]],["ingest",8,1923,"f",22,["R","T","bufToB64","getArr","needsEvidence","refresh","renderList","toJpeg","toast","uid"]],["pendingAttach",9,1947,"v",1,[]],["undo",9,1947,"v",1,[]],["clearArmed",9,1947,"v",1,[]],["normTime",9,1948,"f",6,[]],["onBind",9,1954,"f",12,["$","S","normTel","setPath"]],["onField",9,1966,"f",48,["$","NOTRAVEL","S","T","autoRate","fieldMealsReset","fmtDate","getArr","isStd","leaveDays","normTime","num","pruneStatus","rangeText","renderList","renderMeals","resetMealsFor","toast"]],["liveKind",9,2014,"f",1,[]],["sdRowOf",9,2017,"f",1,["getArr"]],["sdSetPara",9,2018,"f",14,["$","S","SD_MAX","lostItems","persist","sdBuilt","sdClean","sdGrow","sdRowOf"]],["sdGrow",9,2032,"f",1,[]],["sdOpen",9,2033,"f",4,["$","renderSD","sdEditing","sdGrow"]],["sdClose",9,2037,"f",4,["$","refresh","renderSD","sdEditing"]],["sdGoto",9,2041,"f",4,["$$"]],["dropTarget",9,2213,"f",1,[]],["fieldMealsReset",10,2228,"f",4,["S","addDays","isoOk"]],["addFieldNights",10,2235,"f",15,["ROWNEW","S","addDays","fieldStay","tripDates","uid"]],["dropFieldNights",10,2250,"f",9,["S","addDays","fieldStay","uid"]],["setStatus",10,2259,"f",17,["S","T","addFieldNights","autoStatus","dropFieldNights","fieldStay","pruneStatus","rangeText","refresh","renderList","renderMeals","statusLabel","toast","updateLeave"]],["overnightStays",10,2277,"f",15,["S","addDays","isoOk","nights"]],["leaveStays",10,2292,"f",3,["S","T","isoOk"]],["fillStays",10,2295,"f",16,["ROWNEW","S","T","isoOk","leaveStays","nPl","overnightStays","refresh","refreshPlaces","renderList","renderMeals","toast","uid"]],["lockY",11,2315,"v",1,[]],["syncModalLock",11,2316,"f",11,["lockY"]],["initModalLock",11,2327,"f",6,["lockY","syncModalLock"]],["pdfReader",12,2337,"f",6,[]],["pdfLines",12,2344,"f",17,["pdfReader"]],["htmlLines",12,2362,"f",8,[]],["binStr",12,2370,"f",1,[]],["IMP",12,2371,"v",1,[]],["readItinFiles",12,2372,"f",30,["ITIN","T","binStr","htmlLines","pdfLines"]],["hm",12,2402,"f",1,["fr"]],["IMP_KIND",12,2403,"v",1,[]],["IMP_MODE",12,2404,"v",1,[]],["impStopName",12,2405,"f",10,["T","fr"]],["impWhere",12,2415,"f",1,[]],["impOpen",12,2416,"f",5,["$","IMP"]],["impClose",12,2421,"f",1,["$","IMP"]],["impFiles",12,2422,"f",15,["$","IMP","T","impAdd","impName","impOpen","impRender","readItinFiles"]],["impAdd",12,2439,"f",21,["$","IMP","ITIN","T","impName","impRender","nPl"]],["impName",12,2461,"f",8,["IMP","ITIN","S"]],["impPlan",12,2469,"f",1,["IMP","ITIN"]],["impRender",12,2470,"f",29,["$","IMP","IMP_KIND","IMP_MODE","ITIN","S","T","esc","fmtDate","fmtN","hasData","hm","impName","impPlan","impStopName","impWhere","modeLabel","money","nPl"]],["impApply",12,2499,"f",35,["$","DEFS","IMP","IMP_MODE","R","ROWNEW","S","T","bufToB64","impClose","impPlan","impStopName","isoOk","nPl","newStop","refresh","refreshPlaces","renderBinds","renderItin","renderList","renderMeals","toast","uid"]],["OFFLINE_CSP",13,2539,"v",1,[]],["offlineHtml",13,2540,"f",8,["OFFLINE_CSP","PRISTINE"]],["offlineName",13,2548,"f",1,["APP_VERSION","fr"]],["OFFLINE_SHA",13,2551,"v",1,[]],["OFFLINE_FILE",13,2552,"v",1,[]],["SUMS_URL",13,2553,"v",1,[]],["sha256hex",13,2554,"f",1,[]],["syncSha",13,2555,"f",6,["$","OFFLINE_SHA","SUMS_URL","T","esc"]],["downloadOffline",13,2563,"f",15,["OFFLINE_FILE","OFFLINE_SHA","T","offerFile","offlineHtml","offlineName","sha256hex","toast"]],["draftPayload",14,2580,"f",1,["APP_VERSION","S","liveReceipts"]],["draftSuffix",14,2581,"f",1,["fr"]],["saveDraft",14,2582,"f",1,["draftPayload","draftSuffix","fileBase","offerFile"]],["APP_VERSION",14,2591,"v",1,[]],["APP_CHANNEL",14,2592,"v",1,[]],["APP_LABEL",14,2593,"v",1,[]],["MOBILE",14,2594,"m",1,[]],["shareable",14,2595,"f",3,[]],["SEND",14,2598,"v",4,["MOBILE","shareable"]],["sendTitle",14,2602,"f",4,["S","T","rangeText","tripDates"]],["IOS",14,2607,"v",1,[]],["shareFile",14,2608,"f",7,["IOS","T","toast"]],["sendDraft",14,2615,"f",8,["SEND","T","draftPayload","draftSuffix","fileBase","offerFile","sendTitle","shareFile","toast"]],["saveAllParts",14,2624,"f",8,["IOS_PWA","lastParts","nPl","offerFile","toast"]],["sendPdf",14,2632,"f",4,["lastPdf","offerFile","sendTitle","shareFile"]],["deviceLines",14,2637,"f",8,["T","inViewer","verLabel"]],["mailHref",14,2645,"f",1,["T"]],["NO_PI",14,2646,"v",1,[]],["helpHref",14,2647,"f",5,["NO_PI","T","deviceLines","mailHref"]],["feedbackHref",14,2652,"f",7,["NO_PI","T","deviceLines","mailHref"]],["verLabel",14,2660,"f",6,["APP_LABEL","MON","MON_FR","fr"]],["initRailFollow",14,2668,"f",30,["$","$$"]],["LO_KEY",14,2700,"v",1,["CH"]],["noticeHidden",14,2701,"f",1,["LO_KEY"]],["setNotice",14,2702,"f",5,["$","LO_KEY"]],["hideNotice",14,2707,"f",1,["T","setNotice","toast"]],["showNotice",14,2708,"f",1,["setNotice"]],["initNotice",14,2709,"f",33,["$","hideNotice","noticeHidden","setNotice"]],["PTR_KEY",14,2745,"v",1,[]],["flushSave",14,2746,"f",5,["S","STORE","devSave","liveReceipts","pT"]],["initPullRefresh",14,2751,"f",36,["$","APP_LABEL","APP_VERSION","MOBILE","PTR_KEY","T","flushSave","fr","toast"]],["toTop",14,2787,"f",1,[]],["relabel",14,2789,"f",12,["$","$$","IOS_PWA","SEND","T","feedbackHref","fr","helpHref","syncSha","syncSwitch","verLabel"]],["STATIC",14,2802,"v",1,[]],["captureStatic",14,2803,"f",9,["$$","STATIC"]],["applyStatic",14,2812,"f",6,["STATIC","T"]],["setLang",14,2818,"f",10,["$","CH","DEV","LANG","LANG_KEY","S","applyStatic","checkStale","fr","installApp","loadExample","relabel","renderAll","renderRail","renderSnapTypes","syncInstall","syncMenu","toast"]],["initExtras",14,2828,"f",10,["$","IOS_PWA","SEND","relabel","setMenu"]],["openDraft",14,2838,"f",9,["LIST_SECS","R","S","T","fr","getArr","markSeen","newClaimState","normalize","renderAll","toast"]],["lastPdf",15,2849,"v",1,[]],["lastParts",15,2849,"v",1,[]],["lastSig",15,2852,"v",1,[]],["outSig",15,2853,"f",1,["LANG","LAYOUT","R","S"]],["checkStale",15,2854,"f",5,["$","T","building","lastParts","lastPdf","lastSig","outSig"]],["meals",15,2859,"f",1,["MEALS"]],["amt",15,2860,"f",1,["curOf","money"]],["rowDesc",15,2861,"f",5,["T","amt","fmtDate","nPl","nights","privAddr"]],["rowAmt",15,2866,"f",1,["T","amt","money"]],["declExpense",15,2867,"f",8,["amt","fmtLong","money","nights"]],["painter",15,2876,"f",148,["T","amt"]],["subtotalRows",15,3024,"f",3,["T","fmtN","sumBy"]],["fullName",15,3027,"f",1,["S","rankAbbr"]],["formHead",15,3029,"f",13,["S","T","fullName","rangeText","tripDates"]],["drawWorksheet",15,3042,"f",65,["DEFS","GROUPS","R","S","SECNAME","T","amt","autoRate","curOf","dayStatus","dow","fieldStay","fmtDate","fmtN","formHead","fr","grandTotals","isStd","locFor","mealCounts","mealVal","modeText","money","nights","privAddr","pruneStatus","rankAbbr","rationsStay","refsFor","rowAmt","rowDate","rowDesc","rowLoc","statusLabel","stayKind","subtotalRows","sumBy","telStr","tripDates","updateLeave"]],["receiptHeader",15,3107,"f",8,[]],["itemMeta",15,3115,"f",1,["SECNAME","T","fmtDate","rowAmt","rowDate","rowDesc","rowLoc"]],["CURNAME",15,3116,"v",1,[]],["CURNAME_FR",15,3117,"v",1,[]],["amtFull",15,3118,"f",1,["CURNAME","CURNAME_FR","curOf","fr","money"]],["cap",15,3119,"f",1,[]],["tripWhen",15,3121,"f",7,["S","isoOk"]],["tripDest",15,3128,"f",5,["S","isoOk"]],["sdExchangeFr",15,3133,"f",9,["amtFull","locFor","money","tripDest","tripWhen"]],["sdExchange",15,3142,"f",9,["amtFull","locFor","money","tripDest","tripWhen"]],["sdBuilt",15,3154,"f",1,["fr","sdParagraphs","sdParagraphsFr"]],["sdClean",15,3155,"f",1,[]],["sdEnd",15,3156,"f",1,[]],["sdEdited",15,3157,"f",1,["sdClean"]],["sdMigrate",15,3159,"f",7,["sdClean"]],["sdParts",15,3168,"f",12,["sdBuilt","sdClean","sdEnd"]],["sdFinal",15,3180,"f",1,["sdParts"]],["sdParagraphsFr",15,3181,"f",15,["S","amtFull","cap","fmtLong","nights","rowDate","rowLoc","sdExchangeFr"]],["sdParagraphs",15,3196,"f",13,["S","amtFull","cap","fmtLong","nights","rowDate","rowLoc","sdExchange"]],["SD_JURAT_H",15,3209,"v",1,[]],["drawDeclaration",15,3210,"f",69,["PROV_HEAD_FR","PROV_IN_FR","S","SD_JURAT_H","T","fr","inMatter","isCiv","itemMeta","jur","juratDate","juratDay","juratWho","offRankText","prettyRcHeader","provName","receiptHeader","sdFinal","sdName","sdRank"]],["PRETTY_KEY",16,3284,"v",1,["CH"]],["LAYOUT_KEY",16,3284,"v",1,["CH"]],["LAYOUT",16,3285,"m",1,["LAYOUT_KEY","PRETTY_KEY"]],["isPretty",16,3286,"f",1,["LAYOUT"]],["isTI",16,3286,"f",1,["LAYOUT"]],["setLayout",16,3287,"f",5,["LAYOUT","LAYOUT_KEY","PRETTY_KEY","T","checkStale","syncPretty","toast"]],["syncPretty",16,3292,"f",4,["$","LAYOUT","T","isPretty","isTI"]],["IMPORT_KEY",16,3297,"v",1,["CH"]],["IMPORT_ON",16,3298,"m",1,["IMPORT_KEY"]],["setImport",16,3299,"f",4,["IMPORT_KEY","IMPORT_ON","T","syncImport","toast"]],["syncImport",16,3303,"f",1,["$","IMPORT_ON"]],["PSEC",16,3305,"v",1,[]],["PSHORT",16,3306,"v",1,[]],["dShort",16,3307,"f",1,["fmtDate"]],["dRange",16,3308,"f",1,["dShort","isoOk"]],["modeIcon",16,3310,"f",1,[]],["dDow",16,3311,"f",1,["dShort","dow"]],["prettify",16,3312,"f",85,["PSEC","S","T","fmtN","fr","fullName","rangeText","tripDates"]],["prettyFacts",16,3398,"f",16,["DEFS","S","T","isStd","mealCounts","nPl","rangeText","tripDates"]],["primaryCur",16,3414,"f",1,[]],["summaryChecks",16,3416,"f",11,["S","T","checks","dayStatus","fieldStay","fmtN","grandTotals","nPl","primaryCur","rangeText","statusRuns","tripDates"]],["prettyCover",16,3429,"f",106,["GROUPS","PSEC","PSHORT","S","T","fmtN","fr","fullName","grandTotals","nPl","pageMap","prettyFacts","primaryCur","rangeText","sumBy","summaryChecks","tripDates","ts"]],["pageMap",16,3536,"f",25,["DEFS","PSHORT","T","nPl"]],["prettyTitle",16,3562,"f",16,["S","T","fullName","rangeText","tripDates","ts"]],["prettyWorksheet",16,3579,"f",66,["DEFS","GROUPS","PSEC","R","S","T","amt","autoRate","curOf","fmtDate","fmtN","fr","grandTotals","isStd","isoOk","modeText","money","nPl","nights","prettyMeals","prettyTitle","privAddr","rankAbbr","refsFor","stayKind","sumBy","telStr","tripDates"]],["statusRuns",16,3646,"f",1,["addDays","dayStatus"]],["prettyMeals",16,3647,"f",68,["S","T","addDays","dDow","dShort","dayStatus","dow","fieldStay","fr","locFor","mealCounts","mealVal","rangeText","rationsStay","statusLabel","statusRuns"]],["prettyIndex",16,3716,"f",34,["S","SECNAME","T","curOf","fmtDate","money","nPl","rowDate","rowDesc","rowLoc"]],["prettyDraw",16,3750,"f",7,["prettyCover","prettyIndex","prettyWorksheet"]],["prettyRcHeader",16,3758,"f",14,["SECNAME","T","fmtDate","rowAmt","rowDate","rowDesc","rowLoc"]],["prettyFinish",16,3773,"f",16,["S","T","markText","rankAbbr"]],["TI_PARTS",17,3796,"v",1,[]],["TI_TAB",17,3798,"v",1,[]],["TI_LEAF",17,3800,"v",1,[]],["tiPeriod",17,3803,"f",2,["fmtDate"]],["tiShort",17,3805,"f",1,[]],["tiInits",17,3806,"f",1,[]],["tiify",17,3807,"f",81,["S","T","TI_LEAF","TI_PARTS","fullName","markText","rangeText","rankAbbr","tiInits","tripDates"]],["tiTransKind",17,3890,"f",6,[]],["TI_TRANS",17,3896,"v",1,[]],["tiWhere",17,3899,"f",1,["T"]],["tiRcCell",17,3900,"f",9,["DEFS","T","tiWhere"]],["tiCover",17,3911,"f",132,["APP_VERSION","DEFS","MEALS","S","T","dayStatus","dow","evidenceCount","fmtDate","fmtN","fr","getArr","grandTotals","isStd","isoOk","locFor","mealCounts","mealVal","modeIcon","money","nPl","nights","primaryCur","rationsStay","rowDate","statusLabel","stayKind","sumBy","summaryChecks","tiInits","tiPeriod","tiShort","today","tripDates","tripDest"]],["tiContact",17,4044,"f",39,["SECNAME","T","amt","fmtDate","nPl","rowAmt","rowDate","rowDesc","tiWhere"]],["tiClerk",17,4084,"f",82,["MEALS","S","T","TI_TRANS","amt","autoRate","curOf","dDow","dayStatus","fmtDate","fmtN","fr","grandTotals","isStd","locFor","mealCounts","mealVal","modeText","money","nights","num","primaryCur","privAddr","rankAbbr","rationsStay","statusLabel","stayKind","sumBy","telStr","tiPeriod","tiRcCell","tiTransKind","tripDates"]],["tiDraw",17,4166,"f",8,["tiClerk","tiContact","tiCover"]],["tiRcHeader",17,4175,"f",15,["SECNAME","T","fmtDate","rowAmt","rowDate","rowDesc","rowLoc"]],["tiFinish",17,4191,"f",25,["S","T","TI_PARTS","TI_TAB","markText","num","rankAbbr"]],["fitBox",17,4217,"f",4,[]],["build",17,4221,"f",156,["$","APP_LABEL","APP_VERSION","DEFS","DEV","IOS_PWA","LIST_SECS","R","S","SEND","SHOWALL","T","building","checks","dataUrlToBytes","drawDeclaration","drawWorksheet","esc","fileBase","fitBox","fr","fullName","getArr","idbGet","idbPut","inViewer","isPretty","isTI","itemMeta","lastParts","lastPdf","lastSig","markText","nPl","needsEvidence","offerFile","outSig","painter","prettify","prettyDraw","prettyFinish","prettyRcHeader","rankAbbr","receiptHeader","refresh","refsFor","tiDraw","tiFinish","tiRcHeader","tiify"]],["sampleReceipt",18,4379,"f",10,["T"]],["loadExample",18,4389,"f",32,["R","ROWNEW","S","blank","blankSD","fr","newStop","renderAll","sampleReceipt","uid"]],["testPdfReceipt",19,4430,"f",7,["R","bufToB64","uid"]],["betaUndo",19,4437,"v",1,[]],["loadTestData",19,4438,"f",51,["R","ROWNEW","S","T","betaUndo","blank","blankSD","newClaimState","newStop","normalize","persist","renderAll","sampleReceipt","testPdfReceipt","toast","uid"]],["resetArmed",19,4489,"v",1,[]],["betaReset",19,4490,"f",18,["$","CH","DEV","IMPORT_KEY","IS_BETA","LANG_KEY","LAYOUT_KEY","LO_KEY","PRETTY_KEY","PTR_KEY","SEEN","STORE","T","dT","pT","profT","resetArmed","setMenu","toast"]],["SNAP",20,4511,"v",6,[]],["snapRc",20,4517,"v",1,[]],["renderSnapTypes",20,4518,"f",1,["$","SNAP","T","snapType"]],["snapType",20,4519,"f",1,["$","SNAP"]],["snapLabels",20,4520,"f",6,["$","T","snapType"]],["snapDefaultDate",20,4526,"f",4,["today","tripDates"]],["openSnap",20,4530,"f",11,["$","$$","T","fileToReceipt","locFor","snapDefaultDate","snapLabels","snapPreview","snapRc","syncDate","toast","tripDates"]],["snapPreview",20,4541,"f",4,["$","T","esc","fr","snapRc"]],["CROP",21,4547,"v",1,[]],["loadImg",21,4548,"f",1,[]],["openCrop",21,4549,"f",7,["$","CROP","T","cropGuess","cropLayout","loadImg","toast"]],["closeCrop",21,4556,"f",1,["$","CROP"]],["cropFull",21,4557,"f",1,["CROP"]],["cropGuess",21,4559,"f",5,["$","CROP","T","cropFull","findReceipt"]],["findReceipt",21,4566,"f",59,[]],["cropLayout",21,4625,"f",11,["$","CROP","cropDraw"]],["CORNERS",21,4636,"v",1,[]],["cropDraw",21,4637,"f",11,["$","$$","CORNERS","CROP","T","esc"]],["cropMove",21,4648,"f",1,["CROP","cropDraw"]],["cropLoupe",21,4649,"f",8,["$","CROP"]],["initCrop",21,4657,"f",20,["$","CROP","cropLayout","cropLoupe","cropMove"]],["cropRotate",21,4677,"f",5,["$","CROP","cropGuess","cropLayout"]],["homography",21,4683,"f",10,[]],["cropApply",21,4693,"f",21,["CROP","T","closeCrop","homography","toast"]],["cropReceipt",21,4714,"f",9,["$","DEV","LIST_SECS","R","T","getArr","openCrop","persist","refresh","renderList","toast"]],["closeSnap",21,4723,"f",1,["$","snapRc"]],["saveSnap",21,4724,"f",20,["$","DEFS","R","ROWNEW","S","T","addDays","amt","curOf","getArr","isStd","isoOk","num","refresh","refreshPlaces","renderList","renderMeals","snapRc","snapType","toast","uid"]],["deferredInstall",22,4746,"v",1,[]],["isStandalone",22,4747,"f",1,[]],["isIOS",22,4748,"f",1,[]],["isAndroid",22,4749,"f",1,[]],["pwaReady",22,4750,"f",1,["inViewer"]],["syncInstall",22,4751,"f",1,["$","isStandalone","pwaReady"]],["installApp",22,4754,"f",13,["$","T","deferredInstall","isAndroid","isIOS","setMenu","syncInstall","toast"]],["BETA_SEEN",22,4770,"v",1,[]],["syncSwitch",22,4771,"f",7,["$","BETA_SEEN","IS_BETA","T","inViewer"]],["switchChannel",22,4778,"f",4,["IS_BETA","flushSave"]],["registerOffline",22,4782,"f",1,["pwaReady"]],["DEV",23,4785,"v",1,[]],["EXPIRE_DAYS",23,4786,"v",1,[]],["IS_BETA",23,4787,"v",1,[]],["idbOpen",23,4788,"f",1,["IS_BETA"]],["idb",23,4789,"f",1,["DEV"]],["idbGet",23,4790,"f",1,["idb"]],["idbPut",23,4791,"f",1,["idb"]],["idbDel",23,4792,"f",1,["idb"]],["idbKeys",23,4793,"f",1,["idb"]],["idbClear",23,4794,"f",1,["idb"]],["TE",23,4795,"v",1,[]],["TD",23,4795,"v",1,[]],["b64d",23,4796,"f",1,[]],["deriveKey",23,4797,"f",4,["TE"]],["seal",23,4801,"f",7,["DEV","TE","bufToB64"]],["unseal",23,4808,"f",7,["DEV","TD","b64d"]],["saveSettings",23,4815,"f",1,["DEV","idbPut"]],["dT",23,4816,"v",1,[]],["profT",23,4816,"v",1,[]],["devSchedule",23,4817,"f",1,["DEV","dT","devSave"]],["devSave",23,4818,"f",12,["DEV","S","idbDel","idbGet","idbPut","liveReceipts","saveChip","seal"]],["profileOf",23,4830,"f",1,["S"]],["profileSchedule",23,4831,"f",1,["DEV","S","idbPut","profT","profileOf","seal"]],["loadProfile",23,4832,"f",1,["DEV","idbGet","unseal"]],["applyProfile",23,4833,"f",1,["S"]],["wipeClaim",23,4834,"f",1,["DEV","idbDel","idbKeys"]],["restoreDevice",23,4835,"f",12,["DEV","LIST_SECS","R","S","getArr","idbGet","normalize","unseal"]],["reSealAll",23,4847,"f",6,["DEV","devSave","idbDel","idbKeys","idbPut","seal","wipeClaim"]],["setPin",23,4853,"f",7,["DEV","S","bufToB64","deriveKey","loadProfile","profileOf","reSealAll","saveSettings","seal"]],["clearPin",23,4860,"f",5,["DEV","loadProfile","reSealAll","saveSettings"]],["unlock",23,4865,"f",7,["DEV","R","S","applyProfile","b64d","blank","deriveKey","loadProfile","newClaimState","renderAll","restoreDevice","unseal"]],["forgetArmed",23,4872,"v",1,[]],["forgetDevice",23,4873,"f",10,["$","DEV","R","S","SEEN","STORE","T","blank","idbClear","newClaimState","renderAll","saveSettings","syncMenu","toast"]],["saving",23,4885,"v",1,[]],["saveNow",23,4886,"f",26,["$","DEV","S","STORE","T","devSave","idbGet","idbKeys","idbPut","liveReceipts","nPl","pT","profileOf","saveChip","saveDraft","saving","seal","setKeep","syncMenu","toast","unseal"]],["saveChip",23,4912,"f",10,["$","DEV","T"]],["syncFnDefault",23,4923,"f",1,["$","DEV","S"]],["syncMenu",23,4924,"f",11,["$","DEV","T","inViewer","saveChip","syncFnDefault","syncImport","syncPretty","syncSwitch"]],["setMenu",23,4935,"f",1,["$"]],["setKeep",23,4936,"f",7,["$","DEV","T","clearPin","devSave","saveSettings","syncMenu","toast","wipeClaim"]],["setRemember",23,4943,"f",6,["DEV","S","T","clearPin","idbDel","idbPut","profileOf","saveSettings","seal","syncMenu","toast"]],["SEEN",23,4949,"v",1,["CH"]],["markSeen",23,4950,"f",1,["SEEN"]],["newClaimState",23,4951,"f",1,["$","SHOWALL","lastPdf","visited"]],["startBlank",23,4952,"f",4,["R","S","applyProfile","blank","loadProfile","markSeen","newClaimState","renderAll","toast"]],["boot",24,4958,"f",20,["$","DEV","EXPIRE_DAYS","R","S","SEEN","T","applyProfile","applyStatic","blank","captureStatic","fr","idbGet","idbOpen","initCrop","initExtras","initModalLock","initNotice","initPullRefresh","initRailFollow","loadExample","loadProfile","registerOffline","renderAll","renderRail","renderSnapTypes","restore","restoreDevice","syncInstall","syncMenu","toast","wipeClaim"]],["ITIN",25,4,"m",343,["MON","amt","num"]],["[setup and helpers: wiring]",0,0,"w",1,[]],["[language (EN/FR): wiring]",1,0,"w",1,["MISSING"]],["[events: wiring]",9,0,"w",177,["$","$$","CROP","DEFS","DEV","IMP","IOS_PWA","R","ROWNEW","S","SEND","SHOWALL","T","betaReset","build","clearArmed","clearPin","closeCrop","closeSnap","cropApply","cropDraw","cropFull","cropReceipt","cropRotate","downloadOffline","dropTarget","dstApply","dstClose","dstDay","dstOpen","fillStays","forgetArmed","forgetDevice","fr","getArr","hideNotice","impApply","impClose","impFiles","impOpen","impRender","ingest","installApp","lastParts","lastPdf","liveKind","loadTestData","lostItems","markRequired","newStop","offerFile","onBind","onField","openCrop","openDraft","openSnap","pendingAttach","persist","refresh","refreshPlaces","renderItin","renderList","renderMeals","renderSD","requiredFields","saveAllParts","saveDraft","saveNow","saveSettings","saveSnap","sdBuilt","sdClose","sdEditing","sdGoto","sdOpen","sdRowOf","sdSetPara","sendDraft","sendPdf","sendTitle","setImport","setKeep","setLang","setLayout","setMenu","setPin","setRemember","shareFile","showNotice","snapLabels","snapPreview","snapRc","startBlank","switchChannel","syncDate","syncMenu","syncOut","toTop","toast","touch","tripDates","uid","undo","unlock","visited"]],["[Beautify layout: wiring]",16,0,"w",1,["syncImport"]],["[install as app (PWA): wiring]",22,0,"w",2,["$","T","deferredInstall","syncInstall","toast"]],["[boot: wiring]",24,0,"w",1,["boot"]]],"state":["S","R","LEAVE","dstDay","sdEditing","building","SHOWALL","pT","pendingAttach","undo","clearArmed","lockY","IMP","lastPdf","lastParts","lastSig","betaUndo","resetArmed","snapRc","CROP","deferredInstall","dT","profT","forgetArmed","saving"],"totals":{"lines":4319,"fns":337,"secs":26}};
+const REPO = 'https://github.com/AlcubierreWarp/caf-travel-itinerary/blob/main/';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = s => document.querySelector(s);
+const LC = k => `var(--l-${k})`;
+const layerOf = Object.fromEntries(D.layers.map(l => [l[0], l]));
+
+// functions: [name, secIdx, line, kind, loc, refs]
+const F = D.fns.map(([n, s, line, k, loc, refs]) => ({ n, s, line, k, loc, refs, by: [] }));
+const byName = new Map(F.map(f => [f.n, f]));
+F.forEach(f => f.refs.forEach(r => byName.get(r)?.by.push(f.n)));
+const fileOf = f => D.secs[f.s].file;
+
+// section edges: distinct function pairs between sections
+const out = D.secs.map(() => new Map()), inn = D.secs.map(() => new Map());
+F.forEach(f => f.refs.forEach(r => {
+  const t = byName.get(r); if (!t || t.s === f.s) return;
+  (out[f.s].get(t.s) || out[f.s].set(t.s, []).get(t.s)).push([f.n, r]);
+  (inn[t.s].get(f.s) || inn[t.s].set(f.s, []).get(f.s)).push([f.n, r]);
+}));
+
+// header stats
+const nonWiring = F.filter(f => f.k !== 'w');
+const dead = F.filter(f => f.k === 'f' && !f.by.length);
+$('#stats').innerHTML = [
+  [D.totals.lines.toLocaleString('en-CA'), 'lines of app script'],
+  [D.totals.fns, 'functions'],
+  [D.totals.secs, 'sections'],
+  [D.state.length, 'mutable top-level variables'],
+  [dead.length, 'functions never called'],
+].map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// legend and map
+$('#legend').innerHTML = D.layers.map(([k, t]) => `<span><i style="background:${LC(k)}"></i>${esc(t)}</span>`).join('');
+const maxLoc = Math.max(...D.secs.map(s => s.loc));
+$('#map').innerHTML = D.layers.map(([k, t, d]) => {
+  const secs = D.secs.map((s, i) => [s, i]).filter(([s]) => s.L === k).sort((a, b) => b[0].loc - a[0].loc);
+  return `<div class="band" style="--lc:${LC(k)}"><h3>${esc(t)} <small>${esc(d)}</small></h3><div class="chips">${secs.map(([s, i]) =>
+    `<button class="chip" id="c${i}" data-i="${i}" type="button"><span>${esc(s.n)}</span><span class="meta">${s.loc} lines · ${s.f} fn</span>` +
+    `<span class="bar" style="width:${Math.max(6, Math.round(100 * Math.sqrt(s.loc / maxLoc)))}%"></span><span class="tag"></span></button>`).join('')}</div></div>`;
+}).join('');
+$('#map').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) selectSec(+b.dataset.i, true); });
+
+function srcLink(file, line, label) { return line ? `<a href="${REPO}${file}#L${line}" target="_blank" rel="noopener">${esc(label)}</a>` : esc(label); }
+
+function selectSec(i, scroll) {
+  const s = D.secs[i], L = layerOf[s.L];
+  document.querySelectorAll('.chip').forEach(c => {
+    const j = +c.dataset.i; c.classList.toggle('sel', j === i);
+    c.classList.toggle('uses', out[i].has(j)); c.classList.toggle('usedby', inn[i].has(j));
+  });
+  const list = (m, cls) => [...m.entries()].sort((a, b) => b[1].length - a[1].length).map(([j, pairs]) => {
+    const uniq = [...new Set(pairs.map(p => p.join(' → ')))];
+    return `<li><button class="lk" type="button" data-sec="${j}">${esc(D.secs[j].n)}</button> <span class="muted">${uniq.length} link${uniq.length > 1 ? 's' : ''}</span><span class="ex">${esc(uniq.slice(0, 3).join(', '))}${uniq.length > 3 ? ', …' : ''}</span></li>`;
+  }).join('') || '<li class="muted">None</li>';
+  const members = F.filter(f => f.s === i).sort((a, b) => b.loc - a.loc);
+  $('#panel').style.setProperty('--lc', LC(s.L));
+  $('#panel').innerHTML = `<div class="head"><span class="pill">${esc(L[1])}</span><h2>${esc(s.n)}</h2><p>${esc(s.d)}</p>
+    <div class="kv"><span><b>${s.loc}</b> lines</span><span><b>${s.f}</b> functions</span><span><b>${s.v}</b> values</span><span>${srcLink(s.file, s.line, `${s.file} line ${s.line}`)}</span></div></div>
+    <div class="links"><div><h4 class="u">It calls (${out[i].size} sections)</h4><ul class="plain">${list(out[i])}</ul></div>
+    <div><h4 class="b">Called from (${inn[i].size} sections)</h4><ul class="plain">${list(inn[i])}</ul></div></div>
+    <div class="fntable"><table><thead><tr><th>Name</th><th>Lines</th><th>Callers</th></tr></thead><tbody>${members.map(f =>
+      `<tr class="${f.k === 'f' && !f.by.length ? 'dead' : ''}"><td><button class="lk mono" type="button" data-fn="${esc(f.n)}">${esc(f.n)}</button></td><td class="n">${f.loc}</td><td class="n">${new Set(f.by).size}</td></tr>`).join('')}</tbody></table></div>`;
+  if (scroll && matchMedia('(max-width: 899px)').matches) $('#panel').scrollIntoView({ block: 'start', behavior: 'smooth' });
+}
+
+function showFn(name) {
+  const f = byName.get(name); if (!f) { $('#fnview').innerHTML = `<p class="muted">No top-level function or value is called "${esc(name)}".</p>`; return; }
+  const s = D.secs[f.s];
+  const chips = arr => [...new Set(arr)].sort().map(n => `<button class="fnchip" type="button" data-fn="${esc(n)}">${esc(n)}</button>`).join('') || '<span class="muted">None</span>';
+  const kind = { f: 'function', v: 'value', m: 'module', w: 'top-level wiring' }[f.k];
+  $('#fnview').innerHTML = `<div style="display:grid;gap:12px;margin-top:12px">
+    <div class="kv"><h3 class="mono" style="font-size:1.1rem;color:var(--ink)">${esc(f.n)}</h3><span>${kind}</span><span>in <button class="lk" type="button" data-sec="${f.s}">${esc(s.n)}</button></span><span><b>${f.loc}</b> lines</span><span>${srcLink(fileOf(f), f.line, 'open source')}</span></div>
+    <div><h4 style="margin:0 0 6px;font:600 .8rem var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--uses)">Uses (${new Set(f.refs).size})</h4><div class="chiprow">${chips(f.refs)}</div></div>
+    <div><h4 style="margin:0 0 6px;font:600 .8rem var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--usedby)">Used by (${new Set(f.by).size})</h4><div class="chiprow">${chips(f.by)}</div></div></div>`;
+}
+
+document.addEventListener('click', e => {
+  const fn = e.target.closest('[data-fn]'), sec = e.target.closest('[data-sec]');
+  if (fn) { $('#q').value = fn.dataset.fn; showFn(fn.dataset.fn); if (fn.closest('#panel')) $('#fnview').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  else if (sec) { selectSec(+sec.dataset.sec, false); $('#map').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+});
+$('#names').innerHTML = nonWiring.map(f => `<option value="${esc(f.n)}">`).join('');
+$('#q').addEventListener('change', e => showFn(e.target.value.trim()));
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') showFn(e.target.value.trim()); });
+
+selectSec(D.secs.findIndex(s => s.n === 'state'), false);
+$('#q').value = 'refresh'; showFn('refresh');
+</script>
+</body>
+</html>

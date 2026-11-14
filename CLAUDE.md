@@ -18,7 +18,7 @@ Change model: Release.
 - `pwa/`: manifest, offline helper, icons, `beta.css` (beta-only styles).
 - `build.py`, `release.py`: build and release. `.github/workflows/site.yml`: publishing.
 - `test*.py`: Playwright tests.
-- `docs/`: legal wording for review, and the two skill files that hold the working method (`docs/skills/`).
+- `docs/`: legal wording for review, and the two skill files that hold the working method (`docs/skills/`). `docs/code-map.html`: a picture of how the app's code fits together, as of 7 Nov 2026 (1.10 beta 9); open it in a browser.
 - `SOURCE.md`: orientation to the source. `REBUILD.md`: rebuilding from nothing but this repository.
 
 ## Conventions
