@@ -12,7 +12,6 @@ A browser-only tool: CAF members enter a TD itinerary, lodging, meals and expens
   - `main`: source, build and release scripts, tests, `VERSION`, `BETA_BUILD`. Read `CLAUDE.md` and `SOURCE.md` first.
   - Every push to `main` publishes the beta at `/beta/`.
   - Production is served from GitHub Release `vX.Y` (the exact files of that version), never rebuilt.
-- **Artifact copy:** https://claude.ai/artifact/4UWaqjKN31YZgLJN9t3s82. Republish it from `out/travel-claim-packager.html` on every promotion, with a `Version X.Y` label.
 - **Legal wording for AJAG review:** `docs/legal-wording-for-ajag-review.md` (master copy; the claude.ai doc https://claude.ai/artifact/BqVDd7XQjyfp5DYipR8sgQ mirrors it). Update it whenever declaration wording changes.
 - **Contacts:** help and feedback emails go to Thomas.Huet@forces.gc.ca. The footer reads "(c) 2026 Thomas Huet". Tom built the tool on his own time and equipment.
 
@@ -39,9 +38,8 @@ Only when Tom says "release" or "push to production".
 2. Run `python3 release.py promote`. It raises VERSION, resets BETA_BUILD to 1, dates the changelog heading and adds the next "in progress" heading.
 3. Commit ("Release X.Y to production") and push `main`. The Site action builds production once, files GitHub Release `vX.Y` with the site and the offline file (this creates the tag, so no tag is pushed by hand), commits the checksum to `README.md` and `CHANGELOG.md`, and publishes.
 4. Pull, to pick up the checksum commit. Confirm the release exists and the live page shows the new version.
-5. Republish the artifact.
-6. If declaration wording changed, update `docs/legal-wording-for-ajag-review.md` and the claude.ai doc.
-7. Tell Tom what is in the release. Installed apps update on their next online open.
+5. If declaration wording changed, update `docs/legal-wording-for-ajag-review.md` and the claude.ai doc.
+6. Tell Tom what is in the release. Installed apps update on their next online open.
 
 To roll back: Actions, Site, Run workflow, with the version to put back (see `REBUILD.md`).
 

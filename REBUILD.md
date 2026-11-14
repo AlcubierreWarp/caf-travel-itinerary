@@ -141,7 +141,6 @@ Production ("push to production"):
 1. Run all the tests.
 2. `python release.py promote` raises the minor version in `VERSION`, resets `BETA_BUILD` to 1, dates the beta heading in `CHANGELOG.md` and adds a new "in progress" heading for the next version.
 3. Commit and push `main`. The Site action sees a version with no release yet, so it builds production once, files it as GitHub Release `vX.Y` (this creates the tag) with `site.zip` and the offline file, writes the checksum into `README.md` and `CHANGELOG.md` in a commit of its own, and publishes. Pull afterwards to get that commit.
-4. Optional: publish `out/travel-claim-packager.html` as a claude.ai artifact.
 
 A released version is never rebuilt. Every later publish downloads that release's `site.zip`, so the production files and their checksum stay exactly as released.
 
