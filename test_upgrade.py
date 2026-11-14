@@ -1,7 +1,7 @@
 import asyncio, shutil, pathlib, re, sys
 base = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".")  # run through test_live.py
 from playwright.async_api import async_playwright
-U = "http://localhost:8767/Travel-Claim-Packager/"; root = base / "live/s3/Travel-Claim-Packager"  # starts as the live production site
+U = "http://localhost:8767/caf-travel-itinerary/"; root = base / "live/s3/caf-travel-itinerary"  # starts as the live production site
 async def ver(pg): return await pg.evaluate("() => (document.querySelector('.menu-ver') || document.querySelector('#app-ver') || {}).textContent")
 async def main():
     async with async_playwright() as p:

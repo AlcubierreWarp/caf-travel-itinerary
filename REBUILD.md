@@ -32,7 +32,7 @@ On the `source` branch:
 
 ## 2. Accounts and settings
 
-- **GitHub:** the repository `AlcubierreWarp/Travel-Claim-Packager`. If it ever has to be recreated, push both branches (`main` and `source`) and the `release-v*` branches to the new repository.
+- **GitHub:** the repository `AlcubierreWarp/caf-travel-itinerary`. If it ever has to be recreated, push both branches (`main` and `source`) and the `release-v*` branches to the new repository.
 - **GitHub Pages:** Settings, Pages, "Deploy from a branch", branch `main`, folder `/ (root)`. `main` contains `.nojekyll`, so the files are served as they are. No custom domain and no build action are used.
 - **Contacts written into the app:** help and feedback emails go to Thomas.Huet@forces.gc.ca. The footer reads "© 2026 Thomas Huet". Change them in `app/app.html` if needed.
 
@@ -60,7 +60,7 @@ The app has no server, database or analytics. Members' claims live only in their
 Set up once:
 
 ```
-git clone https://github.com/AlcubierreWarp/Travel-Claim-Packager.git site
+git clone https://github.com/AlcubierreWarp/caf-travel-itinerary.git site
 cd site && git worktree add ../source-branch source && cd ..
 mkdir work && cp -r source-branch/. work/ && rm -rf work/.git
 export TCP_REPO="$PWD/site" TCP_SOURCE="$PWD/source-branch"

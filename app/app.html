@@ -2605,7 +2605,7 @@ const offlineName = () => `${fr() ? 'Itineraire-voyage-numerique-FAC' : 'CAF_Dig
 // because a file cannot carry its own checksum. Members compare a copy they were sent against it, or against the README.
 const OFFLINE_SHA = '__OFFLINE_SHA__';
 const OFFLINE_FILE = 'CAF_Digital_Travel_Itinerary.html';
-const SUMS_URL = 'https://github.com/AlcubierreWarp/Travel-Claim-Packager#checksums';
+const SUMS_URL = 'https://github.com/AlcubierreWarp/caf-travel-itinerary#checksums';
 async function sha256hex(buf) { const d = await crypto.subtle.digest('SHA-256', buf); return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join(''); }
 function syncSha() {
   const el = $('#offline-sha'); if (!el) return;

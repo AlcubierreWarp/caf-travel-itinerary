@@ -3,9 +3,9 @@
 import sys, pathlib, asyncio, shutil, subprocess, time
 from playwright.async_api import async_playwright
 base = pathlib.Path(sys.argv[1]).resolve(); site = base / "live/sw"; shutil.rmtree(site, ignore_errors=True)
-shutil.copytree(base / "out/web", site / "Travel-Claim-Packager"); shutil.copytree(base / "out/web-beta", site / "Travel-Claim-Packager/beta")
+shutil.copytree(base / "out/web", site / "caf-travel-itinerary"); shutil.copytree(base / "out/web-beta", site / "caf-travel-itinerary/beta")
 srv = subprocess.Popen([sys.executable, str(base / "serve_cached.py"), str(site), "8768"]); time.sleep(0.8)
-U = "http://localhost:8768/Travel-Claim-Packager/"
+U = "http://localhost:8768/caf-travel-itinerary/"
 fails = []
 def check(n, ok, got=None): print(("ok   " if ok else "FAIL ") + n + ("" if ok else f"  (got {got!r})")); ok or fails.append(n)
 async def main():

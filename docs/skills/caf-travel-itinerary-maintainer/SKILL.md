@@ -1,6 +1,6 @@
 ---
 name: "caf-travel-itinerary-maintainer"
-description: "Use when Tom asks to change, fix, release or push the CAF Digital Travel Itinerary (Travel-Claim-Packager) beta or production, or says 'push to production'."
+description: "Use when Tom asks to change, fix, release or push the CAF Digital Travel Itinerary (caf-travel-itinerary) beta or production, or says 'push to production'."
 ---
 
 # Maintaining the CAF Digital Travel Itinerary
@@ -8,7 +8,7 @@ description: "Use when Tom asks to change, fix, release or push the CAF Digital 
 A browser-only tool: CAF members enter a TD itinerary, lodging, meals and expenses, attach receipts, and get one PDF package for the Orderly Room. Follow the caf-digital-tool-builder skill for principles. This skill covers the specifics of this app.
 
 ## Where things are
-- **Repo:** `AlcubierreWarp/Travel-Claim-Packager` (GitHub Pages).
+- **Repo:** `AlcubierreWarp/caf-travel-itinerary` (GitHub Pages).
   - `main`: the published site. Production is at the root, beta at `/beta/`.
   - `source`: app source, build and release scripts, tests, `VERSION`, `BETA_BUILD`. Read `SOURCE.md` there first.
   - `release-vX.Y` and `prod-v1.0-final`: restore points.

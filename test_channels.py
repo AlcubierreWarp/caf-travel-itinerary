@@ -1,6 +1,6 @@
 import asyncio
 from playwright.async_api import async_playwright
-B = "http://localhost:8765/Travel-Claim-Packager/"
+B = "http://localhost:8765/caf-travel-itinerary/"
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); ctx = await b.new_context(); errs = []

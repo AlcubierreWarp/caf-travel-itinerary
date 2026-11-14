@@ -7,9 +7,9 @@ repo = pathlib.Path(os.environ.get("TCP_REPO", "/home/claude/travel-claim-packag
 def site(dst, prod):
     shutil.copytree(prod, dst, ignore=shutil.ignore_patterns(".git", "beta", "*.md", "CAF_Digital_Travel_Itinerary.html"))
     shutil.copytree(base / "out/web-beta", dst / "beta")
-site(live / "s1/Travel-Claim-Packager", base / "out/web")   # test_channels, port 8765
+site(live / "s1/caf-travel-itinerary", base / "out/web")   # test_channels, port 8765
 site(live / "s2", base / "out/web")                         # test_offline and test_ptr_live, port 8766
-site(live / "s3/Travel-Claim-Packager", repo)               # test_upgrade, port 8767
+site(live / "s3/caf-travel-itinerary", repo)               # test_upgrade, port 8767
 procs = [subprocess.Popen([sys.executable, str(base / "serve_cached.py"), str(live / d), str(port)]) for d, port in (("s1", 8765), ("s2", 8766), ("s3", 8767))]
 time.sleep(1)
 try:
