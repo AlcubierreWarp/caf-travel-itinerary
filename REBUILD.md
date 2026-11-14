@@ -150,7 +150,7 @@ Version labels: production shows `Version X.Y, updated DD Mon YYYY`; the beta sh
 
 On GitHub: Actions, Site, "Run workflow", and enter the version to put back (for example `1.9`). Production is served from that release until the workflow is run again with the field empty, or until the next push to `main`. To stay on the older version, also set `VERSION` back and push.
 
-Versions before 1.9 have no filed release; the workflow takes them from their `release-vX.Y` restore point if it still exists.
+Versions before 1.9 have no filed release; the workflow takes them from their restore point, the tag `vX.Y` (formerly the branch `release-vX.Y`), and files a release from it.
 
 ## 9. Working with Claude again
 
