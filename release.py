@@ -73,12 +73,11 @@ def site(dest):
     names = [f.name for f in (S / "out/web").iterdir()]
     with tempfile.TemporaryDirectory() as t:
         got = run("gh", "release", "download", f"v{ver}", "--repo", REPO, "--pattern", "site.zip", "--dir", t, check=False)
-        # an older version with no filed release: its restore point, a release-vX.Y branch or (once converted) the tag vX.Y
-        branch = (run("git", "rev-parse", "--verify", "-q", f"origin/release-v{ver}^{{commit}}", check=False).stdout.strip()
-                  or run("git", "rev-parse", "--verify", "-q", f"refs/tags/v{ver}^{{commit}}", check=False).stdout.strip())
+        # an older version with no filed release: its restore point, the tag vX.Y
+        branch = run("git", "rev-parse", "--verify", "-q", f"refs/tags/v{ver}^{{commit}}", check=False).stdout.strip()
         if got.returncode == 0:
             zipfile.ZipFile(pathlib.Path(t) / "site.zip").extractall(dest); origin = "its release"
-        elif branch:  # a version released before releases were filed: take it from its restore branch
+        elif branch:  # a version released before releases were filed: take it from its tag
             for n in names: (dest / n).write_bytes(subprocess.run(["git", "show", f"{branch}:{n}"], cwd=S, check=True, capture_output=True).stdout)
             origin = f"restore point for {ver}"
             if publish: make_release(ver, branch, dest, names)

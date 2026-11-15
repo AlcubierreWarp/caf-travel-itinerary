@@ -39,10 +39,9 @@ Tom (LCol, CAF) builds small tools that save CAF members admin time. These princ
 - Release script steps:
   1. Build.
   2. Run the channel check: no beta markers in production, production icon in colour.
-  3. Copy the build and commit with the attribution lines from the system reminder.
-  4. Push and confirm the remote matches HEAD.
-  5. Snapshot the source branch.
-  6. On promotion only: create a `release-vX.Y` branch (tag pushes are blocked by the proxy) and republish the artifact.
+  3. Commit the source to `main` with the attribution lines from the system reminder. The built site is not committed: the repo's publish Action builds it.
+  4. Push and confirm the remote matches HEAD and the publish run passed.
+  5. On promotion only: the publish Action files the version as a GitHub Release, which creates the tag `vX.Y` and keeps the exact files as the restore point. No branch or tag is made by hand.
 - **Beta-only layer** (beta.css, `data-channel="beta"`, grey icons, "Beta" app name, grey theme): use it only when Tom asks for something "beta-specific", meaning tools or visuals that make testing and telling the beta apart easier. Everything else goes in the main app. Confirm with him if unclear.
 
 ## CAF conventions

@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0  # restore branches and the commit date
+          fetch-depth: 0  # restore tags and the commit date
 
       - uses: actions/setup-python@v6
         with:

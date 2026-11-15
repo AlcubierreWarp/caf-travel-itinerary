@@ -10,8 +10,8 @@ Everything is on the `main` branch: the source, the build and release scripts, t
 | --- | --- |
 | `main` | Everything needed to build and publish the site. Every push publishes the beta at `/beta/`. |
 | Releases page | One release per production version, tagged `vX.Y`, with `site.zip` (the exact production site as published) and the offline single file. Production is always served from these files, never rebuilt. |
-| `release-v1.0` to `release-v1.9`, `prod-v1.0-final` | Older copies of the published site from before releases were filed (kept as tags once converted). Version 1.9 was filed as a release from `release-v1.9`. |
-| `source` | The old home of the source, before it moved to `main`. Its history is part of `main`. |
+| Tags `v1.0` to `v1.8`, `v1.0-final` | Older copies of the published site from before releases were filed (formerly the branches `release-vX.Y` and `prod-v1.0-final`). Version 1.9 was filed as a release from its copy. |
+| Tag `source-final` | The last state of the old `source` branch, before the source moved to `main`. Its history is part of `main`. |
 
 In the repository:
 On the `source` branch:
