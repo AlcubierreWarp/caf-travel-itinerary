@@ -23,6 +23,7 @@ Versioning: the minor number goes up by one only when the beta is promoted to pr
 - Amounts with thousands separators are read correctly: 1,234.56 was counted as 1.23. Amounts such as 12abc or 1.2.3 are now flagged as not a number instead of being read as 12 or 1.2. 12,50, 1 234,56 and 1.234,56 read as before
 - An impossible date in a claim file (such as 30 February) counts as no date, so it is flagged instead of printing in the package while its date box looks empty. An unknown jurat province in a claim file is cleared instead of stopping the page
 - Three unused functions removed. New test test_draft_safety.py covers all of the above
+- The page title and browser tab now read Digital Travel Itinerary (Itinéraire de voyage numérique in French), without CAF. The web address, app name, PDF and emails are unchanged
 
 ## 1.9 (24 Oct 2026)
 

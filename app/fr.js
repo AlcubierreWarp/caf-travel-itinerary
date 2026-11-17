@@ -118,6 +118,7 @@ const FR = {
 "Business call": "Appel d'affaires",
 "C - Transportation": "C - Transport",
 "CAF Digital Travel Itinerary": "Itinéraire de voyage numérique des FAC",
+"Digital Travel Itinerary": "Itinéraire de voyage numérique",
 "CAL": "Vol commercial",
 "CLAIMANT": "RÉCLAMANT",
 "Calls": "Appels",
