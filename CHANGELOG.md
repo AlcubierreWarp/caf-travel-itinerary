@@ -2,7 +2,9 @@
 
 Versioning: the minor number goes up by one only when the beta is promoted to production (1.1, 1.2, 1.3...). The beta shows the number the next production release will have plus its own build number, which goes up with every beta publish and starts again at 1 after a promotion, for example "Version 1.3 beta 3, built 17 Oct 2026 10:42 (production is 1.2)". The major number changes only when the owner decides a release is a major one.
 
-## 1.10 (beta, in progress)
+## 1.11 (beta, in progress)
+
+## 1.10 (19 Nov 2026)
 
 - From finance clerk feedback: the worksheet sections follow the order a clerk enters them in ClaimsX: A Personal information, B Itinerary, C Transportation (rental vehicles included), D Lodging, E General expenses, F Currency exchange, G Meals last. The form on the page uses the same order and letters, in both layouts
 - Calls register removed: phone plan charges and calls are general expenses (section E), with Phone plan charges, Business call and Personal call offered as descriptions and Phone charges in Add a receipt. Drafts from earlier versions move their calls into section E, keeping receipts and missing-receipt declarations
