@@ -26,7 +26,7 @@ Only use an offline copy that you downloaded yourself from the published site or
 <!--CHECKSUMS-->
 | Version | File | SHA-256 |
 | --- | --- | --- |
-| 1.9 | `CAF_Digital_Travel_Itinerary.html` | `3dbc034ea8af90fbc138028b3f204cc50b1841cbe35e94f44526185d8962c5d5` |
+| 1.10 | `CAF_Digital_Travel_Itinerary.html` | `a761b445b21eb47a2a4ed3b3be9a240781c421223f9d3703513c6fc2335edfd9` |
 <!--/CHECKSUMS-->
 
 This table shows the current production version. Checksums for both the production and beta files as published right now are at [checksums.txt](https://alcubierrewarp.github.io/caf-travel-itinerary/checksums.txt). Each release's file and checksum are also kept on the [Releases page](https://github.com/AlcubierreWarp/caf-travel-itinerary/releases).

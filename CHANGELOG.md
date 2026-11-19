@@ -6,6 +6,7 @@ Versioning: the minor number goes up by one only when the beta is promoted to pr
 
 ## 1.10 (19 Nov 2026)
 
+- Offline file SHA-256: `a761b445b21eb47a2a4ed3b3be9a240781c421223f9d3703513c6fc2335edfd9`
 - From finance clerk feedback: the worksheet sections follow the order a clerk enters them in ClaimsX: A Personal information, B Itinerary, C Transportation (rental vehicles included), D Lodging, E General expenses, F Currency exchange, G Meals last. The form on the page uses the same order and letters, in both layouts
 - Calls register removed: phone plan charges and calls are general expenses (section E), with Phone plan charges, Business call and Personal call offered as descriptions and Phone charges in Add a receipt. Drafts from earlier versions move their calls into section E, keeping receipts and missing-receipt declarations
 - Leave and field days: tap a date in the meals section to open a short dialog: a duty day, leave, or in the field, for that day only or through a later day of the trip. Each date shows Leave or Field under it, with the row tinted, and rows never change height, so the page does not move. Leave still comes from leave stops in section B and field nights from section D until the member changes a day. Changing a day puts its meals back to their defaults (leave and field days unticked)
